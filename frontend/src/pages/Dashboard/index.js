@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DashboardContainer,
   MiddleSection,
@@ -15,6 +15,7 @@ import LinearProgress from "@mui/material/LinearProgress";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logOutUser } from "../../redux/auth.slice";
+import AddTaskDialog from "../../components/AddTaskDialog";
 function Dashboard() {
     const isAuthenticated = useSelector((state) => state.auth.authenticated);
   const dispatch =useDispatch()
@@ -23,6 +24,7 @@ function Dashboard() {
     const userName = profileData?.user?.username;
     const email = profileData?.user?.email;
     const thumbnail = profileData?.user?.thumbnail;
+    const [addTaskOpen, setAddTaskOpen] = useState(false)
     const navigate = useNavigate()
     useEffect(() => {
         // Redirect to home page if not authenticated
@@ -47,6 +49,9 @@ function Dashboard() {
       clearInterval(timer);
     };
   }, []);
+  const handleClickOpen = () => {
+    setAddTaskOpen(true);
+  };
   const handleLogout = () => {
     dispatch(logOutUser());
 
@@ -137,6 +142,7 @@ function Dashboard() {
                         background: 'black', // Change this to the desired hover color
                       },
                     }}
+                    onClick={handleClickOpen}
                   >
                     {" "}
                     Add New Task
@@ -744,6 +750,7 @@ function Dashboard() {
             </Box>
           </SideRightSection>
         </DashboardContainer>
+        <AddTaskDialog addTaskOpen={addTaskOpen} setAddTaskOpen={setAddTaskOpen}/>
       </OverallDashboardContainer>
     </>
   );

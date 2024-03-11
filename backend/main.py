@@ -9,7 +9,8 @@ from database import (
     fetch_task,
     assign_task,
     fetch_assigned_tasks,
-    authenticate_user
+    authenticate_user,
+    fetch_assigned_rooms,
 
 )
 
@@ -56,8 +57,8 @@ async def get_user(username: str):
 
 # Room routes
 @app.post("/api/rooms/create")
-async def create_room_route(name: str, members: list = []):
-    room = await create_room(name, members)
+async def create_room_route(name: str, createdby: str):
+    room = await create_room(name, createdby)
     return room
 
 @app.get("/api/rooms/{name}")
@@ -65,6 +66,13 @@ async def get_room(name: str):
     room = await fetch_room(name)
     if room:
         return room
+    else:
+        raise HTTPException(status_code=404, detail="Room not found")
+@app.get("/api/all_rooms/{createdby}")
+async def get_all_rooms(createdby: str):
+    rooms = await fetch_assigned_rooms(createdby)
+    if rooms:
+        return {"rooms": rooms} 
     else:
         raise HTTPException(status_code=404, detail="Room not found")
 

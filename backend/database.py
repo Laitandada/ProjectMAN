@@ -61,14 +61,19 @@ async def fetch_user(username):
     return User(**user_data) if user_data else None
 
 # Define CRUD operations for rooms
-async def create_room(name, members=[]):
-    room_data = {"name": name, "members": members}
+async def create_room(name, createdby):
+    room_data = {"name": name, "createdby": createdby}
     result = room_collection.insert_one(room_data)
     return room_data
 
 async def fetch_room(name):
     room_data =  room_collection.find_one({"name": name})
     return Room(**room_data) if room_data else None
+
+async def fetch_assigned_rooms(createdby):
+    assigned_rooms_data = room_collection.find({"createdby": createdby})
+    assigned_rooms = [Room(**data) for data in assigned_rooms_data]
+    return assigned_rooms
 
 # Define CRUD operations for tasks
 async def create_task(title, description, room_name, due_date, assigned_usernames=[]):
