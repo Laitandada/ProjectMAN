@@ -155,3 +155,26 @@ opacity: 1;
   border: 1px solid #707070;
 opacity: 1;
   `;
+  export const ProfileImageContainer= styled(Box)`
+
+
+  width: 100%;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  
+  
+  `;
+  export const ProfileImage = styled(Box)`
+    width: 100px;
+    height: 100px;
+    // border-radius: 15px;
+    // background-color: #eee;
+    display: flex;
+    justify-content: flex-start;
+    align-items: end;
+    background-image: ${(props) => (props.backgroundImage ? `url(${props.backgroundImage})` : `url(https://sharechallenge.s3.amazonaws.com/${props.thumbnail})`)};
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  `;

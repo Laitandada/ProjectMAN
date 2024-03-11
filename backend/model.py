@@ -1,11 +1,14 @@
-from pydantic import BaseModel
-from typing import List
+
+from pydantic import BaseModel, Field
+from typing import List, Optional
 from datetime import datetime
 
 class User(BaseModel):
     username: str
     email: str
     password: str
+    thumbnail: str
+    user_color: str
 
 class Room(BaseModel):
     name: str

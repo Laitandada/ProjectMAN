@@ -1,3 +1,4 @@
+import random
 from model import User, Room, Task, TaskAssignment
 from pymongo import MongoClient
 import certifi
@@ -6,7 +7,7 @@ from bson.objectid import ObjectId
 import pydantic
 pydantic.json.ENCODERS_BY_TYPE[ObjectId]=str
 # Create MongoClient with SSL certificate verification
-client = MongoClient("connection_url", tlsCAFile=certifi.where())
+client = MongoClient("mongodb+srv://dbMicheal:dbOlaitan123@cluster0.jqmj3.mongodb.net/TodoList?retryWrites=true&w=majority", tlsCAFile=certifi.where())
 
 # Send a ping to confirm a successful connection
 try:
@@ -23,10 +24,16 @@ room_collection = database.rooms
 task_collection = database.tasks
 assignment_collection = database.tasks_assignments
 
+
+#get random color
+def get_random_color():
+    # Generate a random hex color code
+    return "#{:06x}".format(random.randint(0, 0xFFFFFF))
+
 # Define CRUD operations for users
-async def create_user(username, email, password):
+async def create_user(username, email, password,thumbnail):
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-    user_data = {"username": username, "email": email, "password": hashed_password}
+    user_data = {"username": username, "email": email, "password": hashed_password,"thumbnail":thumbnail, "user_color": get_random_color(),}
     
     result =  user_collection.insert_one(user_data)
 

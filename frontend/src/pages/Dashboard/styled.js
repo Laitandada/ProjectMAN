@@ -29,7 +29,7 @@ import {
   display:flex;
   flex-direction:column;
   width: 20%;
-  height:100vh;
+  height:100%;
 color:white;
 background-color:#266663;
 justify-content:space-evenly;
@@ -40,15 +40,17 @@ align-items:center;
   display:flex;
   flex-direction:column;
   width: 60%;
-  height:100vh;
+  height:100%;
   
 `;
   export const SideRightSection = styled(Box)`
   display:flex;
   flex-direction:column;
   width: 20%;
+  background-color:#94e8e4;
 
-  
+   height:100%;
+color:white;
 `;
   export const NavContainer = styled(Box)`
     

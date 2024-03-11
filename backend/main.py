@@ -32,17 +32,17 @@ def read_root():
 
 # User routes
 @app.post("/api/users/signup")
-async def signup(username: str, email: str,password: str):
-    user = await create_user(username, email,password)
+async def signup(username: str, email: str,password: str,thumbnail: str):
+    user = await create_user(username, email,password,thumbnail)
     if user:
-        return user
+        return {"user": user} 
     else:
         raise HTTPException(status_code=404, detail="Error Signin up")
 @app.post("/api/users/login")
 async def login( email: str,password: str):
     user = await authenticate_user( email, password)
     if user:
-        return user
+        return {"user": user} 
     else:
         raise HTTPException(status_code=404, detail="Error login in")
 
@@ -50,7 +50,7 @@ async def login( email: str,password: str):
 async def get_user(username: str):
     user = await fetch_user(username)
     if user:
-        return user
+        return {"user": user} 
     else:
         raise HTTPException(status_code=404, detail="User not found")
 

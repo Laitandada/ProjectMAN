@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import { Link, useNavigate } from 'react-router-dom';
 import { Box, Button, TextField } from '@mui/material';
@@ -10,7 +10,18 @@ import IconButton from "@mui/material/IconButton";
 import InputAdornment from "@mui/material/InputAdornment";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from '../../redux/auth.slice';
 function Login() {
+  const isAuthenticated = useSelector((state) => state.auth.authenticated);
+  const   dispatch = useDispatch()
+    
+    useEffect(() => {
+        // Redirect to home page if not authenticated
+        if (isAuthenticated) {
+          navigate("/");
+        }
+      }, [isAuthenticated]);
   const navigate = useNavigate()
   const [formData, setFormData] = React.useState({
     
@@ -51,7 +62,7 @@ function Login() {
       if (response.ok) {
         // Handle success
         const responseData = await response.json();
-       
+        dispatch(setUser(responseData.user));
         console.log(responseData);
         enqueueSnackbar("Login Successful", {
           variant: "success",
