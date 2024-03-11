@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 import pydantic
 pydantic.json.ENCODERS_BY_TYPE[ObjectId]=str
 # Create MongoClient with SSL certificate verification
-client = MongoClient("mongodb+srv://dbMicheal:dbOlaitan123@cluster0.jqmj3.mongodb.net/TodoList?retryWrites=true&w=majority", tlsCAFile=certifi.where())
+client = MongoClient("con", tlsCAFile=certifi.where())
 
 # Send a ping to confirm a successful connection
 try:
