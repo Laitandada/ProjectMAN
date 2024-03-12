@@ -15,7 +15,7 @@ import Switch from "@mui/material/Switch";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { TextField } from "@mui/material";
+import { TextField, Typography } from "@mui/material";
 export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
   const isAuthenticated = useSelector((state) => state.auth.authenticated);
   const dispatch = useDispatch();
@@ -28,10 +28,14 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
   const [fullWidth, setFullWidth] = React.useState(true);
   const [maxWidth, setMaxWidth] = React.useState("md");
   const [roomName, setRoomName] = React.useState("");
+  const [usersName, setUsersName] = React.useState("");
   const [roomNameTwo, setRoomNameTwo] = React.useState("");
   const [createRoom, setCreateRoom] = React.useState(true);
+  const [step, setStep] = React.useState(1);
+
   const [newTask, setNewTask] = React.useState(true);
   const [roomList, setRoomList] = React.useState([]);
+  const [userList, setUserList] = React.useState([]);
   const [formData, setFormData] = React.useState({
     title: "",
     description: "",
@@ -52,8 +56,34 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
         console.error("Error fetching room list:", error);
       }
     };
+    const usersList = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8000/api/all_users/${email}`
+        );
+        const data = await response.json();
+        console.log(data?.users);
+        setUserList(data?.users); // Assuming data is an array of room names
+      } catch (error) {
+        console.error("Error fetching room list:", error);
+      }
+    };
+    const taskList = async () => {
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/tasks/${formData.title}`
+        );
+        const data = await response.json();
+        console.log(data);
+        // Assuming data is an array of room names
+      } catch (error) {
+        console.error("Error fetching room list:", error);
+      }
+    };
 
     fetchRoomList();
+    usersList();
+    taskList();
   }, []);
   const handleClickOpen = () => {
     setAddTaskOpen(true);
@@ -76,7 +106,10 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
 
   const handleRoomChange = (event) => {
     setRoomName(event.target.value);
-    setNewTask(false);
+    setStep(2);
+  };
+  const handleUserChange = (event) => {
+    setUsersName(event.target.value);
   };
   const handleRoomSelect = (event) => {
     setRoomNameTwo(event.target.value);
@@ -125,7 +158,7 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
       if (response.ok) {
         const responseData = await response.json();
         console.log("Room created successfully", responseData);
-        setNewTask(false);
+
         enqueueSnackbar("Room created", {
           variant: "success",
         });
@@ -148,36 +181,24 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
     e.preventDefault();
 
     try {
-    //   const validationErrors = [];
-
-    //   if (!) {
-    //     validationErrors.push("Room name is required");
-    //   }
-
-    //   if (validationErrors.length > 0) {
-    //     validationErrors.forEach((error) => {
-    //       enqueueSnackbar(error, {
-    //         variant: "error",
-    //       });
-    //     });
-    //     return;
-    //   }
-
       const response = await fetch(
-        `http://127.0.0.1:8000/api/tasks/create?title=${formData.title}&description=${formData.description}&room_name=${roomName||roomNameTwo}&due_date=${formData.due_date}`,
+        `http://127.0.0.1:8000/api/tasks/create?title=${
+          formData.title
+        }&description=${formData.description}&room_name=${
+          roomName || roomNameTwo
+        }&due_date=${formData.due_date}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(formData),
         }
       );
 
       if (response.ok) {
         const responseData = await response.json();
         console.log("Task Created created successfully", responseData);
-        setNewTask(false);
+        handleClose();
         enqueueSnackbar("Task created", {
           variant: "success",
         });
@@ -196,6 +217,43 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
       console.error("Error during room creation:", error.message);
     }
   };
+  const handleAssignTask = async (e) => {
+    e.preventDefault();
+
+    try {
+      const responseUser = await fetch(
+        `http://127.0.0.1:8000/api/assign-tasks?task_title=${formData.title}&assigned_by_username=${userName}&assigned_to_username=${usersName}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (responseUser.ok) {
+        const responseDataUser = await responseUser.json();
+        console.log("Task assigned created successfully", responseDataUser);
+        setStep(1);
+        handleClose();
+        enqueueSnackbar("Task created", {
+          variant: "success",
+        });
+        navigate("/");
+      } else {
+        const responseDataUser = await responseUser.text();
+        enqueueSnackbar(responseDataUser, {
+          variant: "error",
+        });
+        console.error(responseDataUser.message);
+      }
+    } catch (error) {
+      enqueueSnackbar(`Error: ${error.message}`, {
+        variant: "error",
+      });
+      console.error("Error during room creation:", error.message);
+    }
+  };
 
   return (
     <React.Fragment>
@@ -206,13 +264,14 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
         onClose={handleClose}
       >
         <DialogTitle></DialogTitle>
-        {newTask && newTask ? (
+        {step === 1 && (
           <>
             <DialogContent>
-              <DialogContentText>Select or create a room</DialogContentText>
+              <DialogContentText sx={{ mb: 2 }}>
+                Select or create a room
+              </DialogContentText>
               {createRoom ? (
                 <FormControl fullWidth>
-                  <InputLabel id="room-select-label">Select Room</InputLabel>
                   <Select
                     labelId="room-select-label"
                     id="room-select"
@@ -241,23 +300,46 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
                     value={roomNameTwo}
                     onChange={handleRoomSelect}
                     required
+                    style={{ height: "46px", fontSize: "1rem" }}
                   />
-                  <Button type="submit">Create Room</Button>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      mt: 5,
+                      background: "#266663",
+                      height: "53px",
+                      borderRadius: "0.25rem",
+                      border: "none",
+
+                      "&:hover": {
+                        background: "#266663",
+                      },
+                    }}
+                  >
+                    Create Room
+                  </Button>
                 </form>
               )}
             </DialogContent>
             <DialogActions>
-              <Button onClick={handleClose}>Close</Button>
-              <Button
-                onClick={createRoom ? handleSelectRoom : handleCreateRoom}
-                color="primary"
-              >
-                {createRoom ? "Select Room" : "Create Room"}
-              </Button>
+              <Button  sx={{color: "#266663",}}  onClick={handleClose}>Close</Button>
+              {createRoom && (
+                <Button
+                  onClick={createRoom ? handleSelectRoom : handleCreateRoom}
+                  sx={{color: "#266663",}} 
+                >
+                  {createRoom ? "Create a new room" : "Create Room"}
+                </Button>
+              )}
             </DialogActions>
           </>
-        ) : (
-          <form style={{ width: "90%", margin:"2rem auto" }} onSubmit={handleSubmitTask}>
+        )}
+        {step === 2 && (
+          <form
+            style={{ width: "90%", margin: "2rem auto" }}
+            onSubmit={handleSubmitTask}
+          >
             <Box
               sx={{
                 display: "flex",
@@ -290,13 +372,11 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
                 variant="outlined"
                 margin="normal"
                 type="text"
-                defaultValue={roomName || roomNameTwo }
+                defaultValue={roomName || roomNameTwo}
                 name="room_name"
-            
                 placeholder="Room Name"
-            
               />
-<TextField
+              <TextField
                 variant="outlined"
                 margin="normal"
                 type="text"
@@ -306,20 +386,19 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
                 placeholder="Task Due Date"
                 required
               />
-            
 
               <Button
                 type="submit"
                 variant="contained"
                 sx={{
                   mt: 5,
-                  backgroundColor: "#6747c7",
+                  background: "#266663",
                   height: "53px",
                   borderRadius: "0.25rem",
                   border: "none",
 
                   "&:hover": {
-                    backgroundColor: "#6747c7", // Change the color on hover
+                    background: "#266663",
                   },
                 }}
               >
@@ -327,6 +406,29 @@ export default function AddTaskDialog({ addTaskOpen, setAddTaskOpen }) {
               </Button>
             </Box>
           </form>
+        )}
+        {step === 3 && (
+          <FormControl fullWidth>
+            <Typography>Select Users Name To assign task to</Typography>
+
+            <Select
+              labelId="user-select-label"
+              id="user-select"
+              value={usersName}
+              onChange={handleUserChange}
+            >
+              {Array.isArray(userList) &&
+                userList.map((user) => (
+                  <MenuItem key={user.username} value={user.username}>
+                    {user.username}
+                  </MenuItem>
+                ))}
+            </Select>
+
+            <Button type="submit" onClick={handleAssignTask}>
+              Assign Task
+            </Button>
+          </FormControl>
         )}
       </Dialog>
     </React.Fragment>

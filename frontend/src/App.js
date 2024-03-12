@@ -13,6 +13,7 @@ import store, { persistor } from "./redux/store";
 import Login from "./pages/Login/index.js";
 import Home from "./pages/Home/index.js";
 import SignUp from "./pages/Signup/index.js";
+import FullTaskList from "./components/TaskList.js";
 function App() {
   return (
     <Provider store={store}>
@@ -25,6 +26,7 @@ function App() {
                 
                 <Route path="/login" element={<Login />} />{" "}
                 <Route path="/signup" element={<SignUp />} />{" "}
+                <Route path="/task_list" element={<FullTaskList />} />{" "}
 
                 {/* 👈 Renders at /app/ */}
               </Routes>

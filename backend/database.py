@@ -7,7 +7,7 @@ from bson.objectid import ObjectId
 import pydantic
 pydantic.json.ENCODERS_BY_TYPE[ObjectId]=str
 # Create MongoClient with SSL certificate verification
-client = MongoClient("con", tlsCAFile=certifi.where())
+client = MongoClient("mongodb+srv://dbMicheal:dbOlaitan123@cluster0.jqmj3.mongodb.net/TodoList?retryWrites=true&w=majority", tlsCAFile=certifi.where())
 
 # Send a ping to confirm a successful connection
 try:
@@ -59,6 +59,10 @@ async def authenticate_user(email, password):
 async def fetch_user(username):
     user_data = user_collection.find_one({"username": username})
     return User(**user_data) if user_data else None
+async def fetch_all_users(email):
+    all_users_data = user_collection.find({"email": {"$ne": email}})
+    all_users = [User(**data) for data in all_users_data]
+    return all_users
 
 # Define CRUD operations for rooms
 async def create_room(name, createdby):
@@ -72,7 +76,9 @@ async def fetch_room(name):
 
 async def fetch_assigned_rooms(createdby):
     assigned_rooms_data = room_collection.find({"createdby": createdby})
+    
     assigned_rooms = [Room(**data) for data in assigned_rooms_data]
+    print(assigned_rooms)
     return assigned_rooms
 
 # Define CRUD operations for tasks
@@ -99,7 +105,25 @@ async def create_task(title, description, room_name, due_date, assigned_username
     }
     result = task_collection.insert_one(task_data)
     return Task(**task_data)
+async def update_task_completion(title: str):
+  
 
+    
+    # Find the task by ObjectId
+    task_data = task_collection.find_one({"title": title})
+    assignment_data = assignment_collection.find_one({"task.title": title} )
+    
+    if task_data and assignment_data:
+        # Update the completed status to True
+        task_collection.update_one({"title": title}, {"$set": {"completed": True}})
+        assignment_collection.update_one({"task.title": title}, {"$set": {"task.completed": True}})
+        return task_data
+    else:
+        return None
+async def fetch_all_tasks( createdby):
+    all_tasks_data = task_collection.find({  "room.createdby": createdby})
+    all_tasks = [Task(**data) for data in all_tasks_data]
+    return all_tasks
 
 async def fetch_task(title):
     task_data =  task_collection.find_one({"title": title})
@@ -151,3 +175,19 @@ async def assign_task(task_title, assigned_by_username, assigned_to_username):
         return None
 
 
+async def search_task_by_title(search_term: str, page: int, page_size: int):
+ 
+    print("hello")
+    # Perform a case-insensitive search on task titles
+    search_regex = {"$regex": f".*{search_term}.*", "$options": "i"}
+
+    # Find tasks that match the search term and apply pagination
+    tasks_cursor = task_collection.find({"title": search_regex}).skip((page - 1) * page_size).limit(page_size)
+    print(tasks_cursor,"hello")
+    # Convert tasks cursor to a list of dictionaries
+    tasks_data = [task for task in tasks_cursor]
+
+    # Convert each task dictionary to a Task model instance
+    tasks = [Task(**task) for task in tasks_data]
+
+    return tasks

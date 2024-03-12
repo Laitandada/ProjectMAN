@@ -1,5 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from typing import List
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from model import Task
 from database import (
     create_user,
     fetch_user,
@@ -11,7 +13,11 @@ from database import (
     fetch_assigned_tasks,
     authenticate_user,
     fetch_assigned_rooms,
-
+    fetch_all_users,
+    fetch_all_tasks,
+    search_task_by_title,
+    update_task_completion,
+   
 )
 
 app = FastAPI()
@@ -54,6 +60,13 @@ async def get_user(username: str):
         return {"user": user} 
     else:
         raise HTTPException(status_code=404, detail="User not found")
+@app.get("/api/all_users/{email}")
+async def get_all_users(email: str):
+    users = await fetch_all_users(email)
+    if users:
+        return {"users": users} 
+    else:
+        raise HTTPException(status_code=404, detail="Users not found")
 
 # Room routes
 @app.post("/api/rooms/create")
@@ -82,6 +95,21 @@ async def create_task_route(title: str, description: str, room_name: str, due_da
     task = await create_task(title, description, room_name, due_date, assigned_users)
     return task
 
+@app.put("/api/tasks/update/{title}")
+async def update_task_completed_status(title: str):
+    task = await update_task_completion(title)
+    if task:
+        return {"message": "Task updated successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="Task not found")
+@app.get("/api/all_tasks/")
+async def get_all_tasks( createdby: str):
+    tasks = await fetch_all_tasks( createdby)
+    if tasks:
+        return {"tasks": tasks}
+    else:
+        raise HTTPException(status_code=404, detail="Tasks not found")
+
 @app.get("/api/tasks/{title}")
 async def get_task(title: str):
     task = await fetch_task(title)
@@ -93,9 +121,21 @@ async def get_task(title: str):
 async def get_task(username: str):
     tasks = await fetch_assigned_tasks(username)
     if tasks:
-        return tasks
+     return {"individual_tasks": tasks} 
     else:
         raise HTTPException(status_code=404, detail="Users task not found")
+    
+@app.get("/api/tasks/search/{search_term}")
+async def search_tasks(
+    search_term: str = Query(..., title="Search Term", description="The term to search for in task titles"),
+    page: int = Query(1, title="Page", description="Page number for pagination"),
+    page_size: int = Query(10, title="Page Size", description="Number of tasks to return per page")
+):
+    tasks = await search_task_by_title(search_term, page, page_size)
+    if tasks:
+        return tasks
+    else:
+        raise HTTPException(status_code=404, detail="Task search failed")
 
 # Task Assignment route
 @app.post("/api/assign-task")
@@ -105,3 +145,4 @@ async def assign_task_route(task_title: str, assigned_by_username: str, assigned
         return assignment
     else:
         raise HTTPException(status_code=404, detail="Task assignment failed")
+    

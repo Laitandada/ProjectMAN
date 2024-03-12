@@ -152,13 +152,13 @@ function Login() {
           variant="contained"
           sx={{
             mt: 5,
-            backgroundColor: '#6747c7',
+           background: "#266663",
             height: '53px',
             borderRadius: '0.25rem',
             border: 'none',
          
             '&:hover': {
-              backgroundColor: '#6747c7', // Change the color on hover
+             background: "#266663", // Change the color on hover
             },
           }}
         >
@@ -167,15 +167,11 @@ function Login() {
       </Box>
             </form>
 
-            <Link to="/forgotPassword" style={{textDecoration:'none'}} >
-                <FormForget>
-                    Forgot Password?
-                </FormForget>
-            </Link>
+            
        <FormAuth>
        Not a member yet? <Link to="/signup" style={{textDecoration:'none'}} >
              
-                   <span style={{color:"#6747c7"}}> Sign up</span>
+                   <span style={{color:"#266663"}}> Sign up</span>
               
             </Link> and get started now!
        </FormAuth>

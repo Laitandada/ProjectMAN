@@ -48,7 +48,8 @@ align-items:center;
   flex-direction:column;
   width: 20%;
   background-color:#94e8e4;
-
+border-top-left-radius:20px;
+border-bottom-left-radius:20px;
    height:100%;
 color:white;
 `;

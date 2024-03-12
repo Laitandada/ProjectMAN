@@ -262,12 +262,12 @@ function SignUp() {
               variant="contained"
               sx={{
                 mt: 5,
-                backgroundColor: '#6747c7',
+                 background: "#266663",
                 height: '53px',
                 borderRadius: '0.25rem',
                 border: 'none',
                 '&:hover': {
-                  backgroundColor: '#6747c7',
+                   background: "#266663",
                 },
               }}
             >
@@ -275,7 +275,13 @@ function SignUp() {
             </Button>
           </Box>
         </form>
-
+        <FormAuth>
+       Already has your details <Link to="/login" style={{textDecoration:'none'}} >
+             
+                   <span style={{color:"#266663"}}> Sign up</span>
+              
+            </Link> 
+       </FormAuth>
         </FormContainer>
         {/* ... (your existing JSX code) ... */}
       </OverallContainer>
